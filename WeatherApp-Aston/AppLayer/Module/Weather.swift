@@ -7,35 +7,40 @@
 
 import Foundation
 
-import Foundation
-
 struct Weather: Codable {
     let city: String
-    let main: Main
+    let temperature: Temperature
     let weather: [WeatherCondition]
     
     enum CodingKeys: String, CodingKey {
         case city = "name"
-        case main
+        case temperature = "main"
         case weather
     }
     
-    struct Main: Codable {
-        let temp: Double
-        
-        enum CodingKeys: String, CodingKey {
-            case temp
+    static func returnUppercased(weather: String?) -> String {
+        guard let weather = weather else {
+            return ""
         }
-    }
-    
-    struct WeatherCondition: Codable {
-        let main: String
-        let description: String
-        
-        enum CodingKeys: String, CodingKey {
-            case main
-            case description
-        }
+        let result = weather.prefix(1).uppercased() + weather.dropFirst()
+        return result
     }
 }
 
+struct Temperature: Codable {
+    let value: Double
+    
+    enum CodingKeys: String, CodingKey {
+        case value = "temp"
+    }
+}
+
+struct WeatherCondition: Codable {
+    let weather: String
+    let weatherDescription: String
+    
+    enum CodingKeys: String, CodingKey {
+        case weather = "main"
+        case weatherDescription = "description"
+    }
+}

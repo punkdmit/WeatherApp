@@ -10,6 +10,7 @@ import CoreLocation
 
 private enum Endpoints: String {
     case weather = "/weather"
+    case forecast = "/forecast"
 }
 
 private enum HttpType: String {
@@ -24,12 +25,13 @@ private extension NSError {
 private extension String {
     static let baseURL = "https://api.openweathermap.org/data/2.5"
     static let apiKey = "2d156d61ee4d8e9cd8495b63ff4e8c76"
+    static let units = "metric"
 }
 
 final class NetworkService {
     
     func getWeather(for city: String, completion: @escaping (Result<Weather, Error>) -> Void) {
-        guard let request = createCityWeatherRequest(for: city) else {
+        guard let request = createCityWeatherRequest(for: city, Endpoints.weather) else {
             completion(.failure(NSError.networkError))
             return
         }
@@ -51,7 +53,7 @@ final class NetworkService {
     }
     
     func getWeather(for location: CLLocationCoordinate2D, completion: @escaping (Result<Weather, Error>) -> Void) {
-        guard let request = createLocationWeatherRequest(for: location) else {
+        guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {
             completion(.failure(NSError.networkError))
             return
         }
@@ -72,15 +74,16 @@ final class NetworkService {
         task.resume()
     }
     
-    private func createCityWeatherRequest(for city: String) -> URLRequest? {
-        guard let url = URL(string: .baseURL + Endpoints.weather.rawValue) else {
+    private func createCityWeatherRequest(for city: String, _ endpoint: Endpoints) -> URLRequest? {
+        guard let url = URL(string: .baseURL + endpoint.rawValue + "?units=metric") else {
             return nil
         }
         
         var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
         components?.queryItems = [
             URLQueryItem(name: "q", value: city),
-            URLQueryItem(name: "appid", value: .apiKey)
+            URLQueryItem(name: "appid", value: .apiKey),
+            URLQueryItem(name: "units", value: .units)
         ]
         
         guard let finalURL = components?.url else {
@@ -92,8 +95,8 @@ final class NetworkService {
         return request
     }
     
-    private func createLocationWeatherRequest(for location: CLLocationCoordinate2D) -> URLRequest? {
-        guard let url = URL(string: .baseURL + Endpoints.weather.rawValue) else {
+    private func createLocationWeatherRequest(for location: CLLocationCoordinate2D, _ endpoint: Endpoints) -> URLRequest? {
+        guard let url = URL(string: .baseURL + endpoint.rawValue) else {
             return nil
         }
         
@@ -101,7 +104,8 @@ final class NetworkService {
         components?.queryItems = [
             URLQueryItem(name: "lat", value: "\(location.latitude)"),
             URLQueryItem(name: "lon", value: "\(location.longitude)"),
-            URLQueryItem(name: "appid", value: .apiKey)
+            URLQueryItem(name: "appid", value: .apiKey),
+            URLQueryItem(name: "units", value: .units)
         ]
         
         guard let finalURL = components?.url else {
