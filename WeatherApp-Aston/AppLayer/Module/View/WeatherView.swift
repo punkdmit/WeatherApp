@@ -9,9 +9,28 @@ import SnapKit
 
 final class WeatherView: UIView {
     
+    weak var dataSource: UITableViewDataSource? {
+        didSet {
+            tableView.dataSource = dataSource
+        }
+    }
+    
+    weak var delegate: UITableViewDelegate? {
+        didSet {
+            tableView.delegate = delegate
+        }
+    }
+    
     //MARK: Private properties
     
-    private lazy var tableView = UITableView()
+    private lazy var tableView: UITableView = {
+        let tableView = UITableView(frame: .zero)
+        tableView.backgroundColor = .white
+        tableView.register(ForecastTableViewCell.self, forCellReuseIdentifier: ForecastTableViewCell.identifier)
+        tableView.dataSource = dataSource
+        tableView.delegate = delegate
+        return tableView
+    }()
     
     private lazy var rootStack: UIStackView = {
         let stack = UIStackView()
@@ -62,13 +81,19 @@ final class WeatherView: UIView {
 
 extension WeatherView {
     
-    func update(with weather: Weather) {
+    func update(with weather: WeatherResponse) {
         DispatchQueue.main.async {
             self.cityLabel.text = weather.city
             self.temperatureLabel.text = "\(weather.temperature.value)°C"
-            self.descriptionLabel.text = Weather.returnUppercased(
-                weather: weather.weather.first?.weatherDescription
+            self.descriptionLabel.text = WeatherResponse.returnUppercased(
+                weather: weather.weatherDescription.first?.weatherDescription
             )
+        }
+    }
+    
+    func reloadData() {
+        DispatchQueue.main.async {
+            self.tableView.reloadData()
         }
     }
 }
@@ -83,34 +108,23 @@ private extension WeatherView {
     }
     
     func configureLayout() {
-        addSubview(tableView)
-        tableView.addSubview(rootStack)
+        addSubview(rootStack)
         rootStack.addArrangedSubview(cityLabel)
         rootStack.addArrangedSubview(temperatureLabel)
         rootStack.addArrangedSubview(descriptionLabel)
         
-        tableView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
-        }
+        addSubview(tableView)
         
         rootStack.snp.makeConstraints {
             $0.width.equalToSuperview()
-            $0.top.equalToSuperview()
+            $0.top.equalTo(safeAreaLayoutGuide.snp.top)
         }
-
-//        cityLabel.snp.makeConstraints {
-//            $0.center.equalToSuperview()
-//        }
-//        
-//        temperatureLabel.snp.makeConstraints {
-//            $0.top.equalTo(cityLabel.snp.bottom).offset(10)
-//            $0.center.equalToSuperview()
-//        }
-//        
-//        conditionLabel.snp.makeConstraints {
-//            $0.top.equalTo(temperatureLabel.snp.bottom).offset(10)
-//            $0.centerX.equalToSuperview()
-//        }
+        
+        tableView.snp.makeConstraints {
+            $0.top.equalTo(rootStack.snp.bottom).offset(AppConstants.normalSpacing)
+//            $0.width.equalToSuperview()
+            $0.left.right.bottom.equalToSuperview()
+        }
     }
 }
 

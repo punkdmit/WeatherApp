@@ -20,23 +20,25 @@ final class WeatherViewController: UIViewController {
     
     private lazy var weatherView: WeatherView = {
         let view = WeatherView()
+        view.dataSource = self
+        view.delegate = self
         return view
     }()
 
     private let viewModel = WeatherViewModel()
     
-//    private let locationManager = CLLocationManager()
     private let locationService = LocationService()
     
     //MARK: Lyfe Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         setupUI()
+//        setupViewModel()
         fetchWeather()
-//        setupLocationManager()
         locationService.startUpdatingLocation()
-        updateView()
+        setupViewModel()
     }
 }
 
@@ -58,28 +60,48 @@ private extension WeatherViewController {
         }
     }
     
-    func updateView() {
+    func setupViewModel() {
         viewModel.didUpdateWeather = { [weak self] in
             if let weather = self?.viewModel.weather {
                 self?.weatherView.update(with: weather)
             }
         }
+        
+        viewModel.didUpdateForecast = { [weak self] in
+            self?.weatherView.reloadData()
+        }
     }
     
-//    func setupLocationManager() {
-//        locationManager.delegate = self
-//        locationManager.desiredAccuracy = kCLLocationAccuracyBest
-//        locationManager.requestWhenInUseAuthorization()
-//        locationManager.startUpdatingLocation()
-//    }
-    
     func fetchWeather() {
-//        viewModel.fetchWeather(for: "Moscow")
         viewModel.fetchWeather(for: locationService.currentLocation ?? CLLocationCoordinate2D())
+        viewModel.fetchForecast(for: locationService.currentLocation ?? CLLocationCoordinate2D())
     }
 
 }
 
-//MARK: CLLocationManagerDelegate
+// MARK: UITableViewDelegate, UITableViewDataSource
 
+extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        viewModel.forecast?.forecasts.count ?? 0
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: ForecastTableViewCell.identifier, for: indexPath) as? ForecastTableViewCell else {
+            return UITableViewCell()
+        }
+        
+        if let forecast = viewModel.forecast?.forecasts[indexPath.row] {
+            let cellModel = ForecastTableViewCellModel(
+                description: forecast.weatherDescription.first?.weatherDescription.capitalized,
+                minTemp: forecast.temperature.min,
+                maxTemp: forecast.temperature.max,
+                date: forecast.date
+            )
+            cell.configure(with: cellModel)
+        }
+        return cell
+    }
+}
 

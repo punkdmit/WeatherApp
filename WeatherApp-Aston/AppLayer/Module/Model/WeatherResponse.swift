@@ -1,5 +1,5 @@
 //
-//  Weather.swift
+//  WeatherResponse.swift
 //  WeatherApp-Aston
 //
 //  Created by Dmitry Apenko on 18.03.2024.
@@ -7,15 +7,15 @@
 
 import Foundation
 
-struct Weather: Codable {
+struct WeatherResponse: Codable {
     let city: String
     let temperature: Temperature
-    let weather: [WeatherCondition]
+    let weatherDescription: [WeatherCondition]
     
     enum CodingKeys: String, CodingKey {
         case city = "name"
         case temperature = "main"
-        case weather
+        case weatherDescription = "weather"
     }
     
     static func returnUppercased(weather: String?) -> String {
