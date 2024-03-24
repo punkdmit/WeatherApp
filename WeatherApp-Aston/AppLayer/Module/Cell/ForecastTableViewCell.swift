@@ -10,6 +10,15 @@ import UIKit
 
 final class ForecastTableViewCell: UITableViewCell {
     
+    // MARK: Constants
+    
+    private enum Constants {
+        static let temperatureMetric = "°C"
+        static let separator = " ⎯ "
+    }
+    
+
+    
     //MARK: Static properties
         
     static var identifier: String { "\(Self.self)" }
@@ -92,8 +101,8 @@ extension ForecastTableViewCell {
     
     func configure(with model: ForecastTableViewCellModel) {
         dateLabel.text = model.date
-        minTempLabel.text = "\(model.minTemp ?? Double())°C - "
-        maxTempLabel.text = "\(model.maxTemp ?? Double())°C"
+        minTempLabel.text = "\(model.minTemp ?? Double())" + Constants.temperatureMetric + Constants.separator
+        maxTempLabel.text = "\(model.maxTemp ?? Double())" + Constants.temperatureMetric
         descriptionLabel.text = model.description
     }
 }

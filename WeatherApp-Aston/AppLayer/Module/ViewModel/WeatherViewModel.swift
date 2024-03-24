@@ -9,21 +9,13 @@ import Foundation
 import CoreLocation
 
 final class WeatherViewModel {
+        
+    var weather = Bindable<WeatherResponse?>(nil)
+    var forecast = Bindable<ForecastResponse?>(nil)
+    var cities = Bindable<[CitiesResponse]?>(nil)
     
-    var weather: WeatherResponse? {
-        didSet {
-            self.didUpdateWeather?()
-        }
-    }
-    
-    var forecast: ForecastResponse? {
-        didSet {
-            self.didUpdateForecast?()
-        }
-    }
-    
-    var didUpdateWeather: (() -> Void)?
-    var didUpdateForecast: (() -> Void)?
+    var isSearching = false
+    var searchText: String?
     
     let networkService = NetworkService()
     
@@ -31,7 +23,7 @@ final class WeatherViewModel {
         networkService.getWeather(for: city) { [weak self] result in
             switch result {
             case .success(let weather):
-                self?.weather = weather
+                self?.weather.value = weather
             case .failure(let error):
                 print(error)
             }
@@ -42,7 +34,7 @@ final class WeatherViewModel {
         networkService.getWeather(for: location) { [weak self] result in
             switch result {
             case .success(let weather):
-                self?.weather = weather
+                self?.weather.value = weather
             case .failure(let error):
                 print(error)
             }
@@ -53,7 +45,7 @@ final class WeatherViewModel {
         networkService.getForecast(for: city) { [weak self] result in
             switch result {
             case .success(let forecast):
-                self?.forecast = forecast
+                self?.forecast.value = forecast
             case .failure(let error):
                 print(error)
             }
@@ -64,25 +56,21 @@ final class WeatherViewModel {
         networkService.getForecast(for: location) { [weak self] result in
             switch result {
             case .success(let forecast):
-                self?.forecast = forecast
+                self?.forecast.value = forecast
             case .failure(let error):
                 print(error)
             }
         }
     }
     
-    
-    //    func fetchForecast(for city: String) {
-    //        networkService.getForecast(for: city) { [weak self] result in
-    //            switch result {
-    //            case .success(let forecast):
-    //                DispatchQueue.main.async {
-    //                    self?.forecast = forecast
-    ////                    self?.didUpdateForecast?()
-    //                }
-    //            case .failure(let error):
-    //                print(error)
-    //            }
-    //        }
-    //    }
+    func fetchCity(for city: String) {
+        networkService.getCities(for: city) { [weak self] result in
+            switch result {
+            case .success(let city):
+                self?.cities.value = city
+            case .failure(let error):
+                print(error)
+            }
+        }
+    }
 }

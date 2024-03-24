@@ -14,9 +14,14 @@ final class WeatherViewController: UIViewController {
     
     private enum Constants {
         static let navigationItemTitle = "Текущее место"
+        static let searchBarTitle = "Input city"
     }
     
     //MARK: Private properties
+    
+    private var searchController = UISearchController(searchResultsController: nil)
+    private let viewModel = WeatherViewModel()
+    private let locationService = LocationService()
     
     private lazy var weatherView: WeatherView = {
         let view = WeatherView()
@@ -25,19 +30,14 @@ final class WeatherViewController: UIViewController {
         return view
     }()
 
-    private let viewModel = WeatherViewModel()
-    
-    private let locationService = LocationService()
-    
     //MARK: Lyfe Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        setupSearchControoler()
         setupUI()
-//        setupViewModel()
-        fetchWeather()
         locationService.startUpdatingLocation()
+        fetchWeatherAndForcast(for: locationService.currentLocation ?? CLLocationCoordinate2D())
         setupViewModel()
     }
 }
@@ -47,8 +47,7 @@ final class WeatherViewController: UIViewController {
 private extension WeatherViewController {
     
     func setupUI() {
-        navigationController?.navigationBar.prefersLargeTitles = true
-        navigationItem.title = Constants.navigationItemTitle
+        showNavigationTitle()
         configureLayout()
     }
     
@@ -61,47 +60,128 @@ private extension WeatherViewController {
     }
     
     func setupViewModel() {
-        viewModel.didUpdateWeather = { [weak self] in
-            if let weather = self?.viewModel.weather {
+        viewModel.weather.bind { [weak self] _ in
+            if let weather = self?.viewModel.weather.value {
                 self?.weatherView.update(with: weather)
             }
         }
         
-        viewModel.didUpdateForecast = { [weak self] in
+        viewModel.forecast.bind { [weak self] _ in
             self?.weatherView.reloadData()
         }
     }
     
-    func fetchWeather() {
-        viewModel.fetchWeather(for: locationService.currentLocation ?? CLLocationCoordinate2D())
-        viewModel.fetchForecast(for: locationService.currentLocation ?? CLLocationCoordinate2D())
+    func fetchWeatherAndForcast(for location: CLLocationCoordinate2D) {
+//        guard let location = location else { return }
+        viewModel.fetchWeather(for: location)
+        viewModel.fetchForecast(for: location)
     }
 
+    func setupSearchControoler() {
+        searchController.searchResultsUpdater = self
+        searchController.obscuresBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        searchController.searchBar.placeholder = Constants.searchBarTitle
+        navigationItem.searchController = searchController
+        definesPresentationContext = false
+        navigationItem.hidesSearchBarWhenScrolling = false
+    }
+    
+    func showNavigationTitle() {
+        navigationController?.navigationBar.prefersLargeTitles = true
+        navigationItem.title = Constants.navigationItemTitle
+    }
+    
+    func hideNavigationTitle() {
+        navigationController?.navigationBar.prefersLargeTitles = false
+        navigationItem.title = nil
+    }
 }
+
+//MARK: UISearchResultsUpdating
+
+extension WeatherViewController: UISearchResultsUpdating {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        viewModel.isSearching = searchController.searchBar.text.isNotEmpty
+        
+        if searchController.searchBar.text != viewModel.searchText {
+            viewModel.searchText = searchController.searchBar.text
+            viewModel.fetchCity(for: viewModel.searchText ?? "")
+            viewModel.cities.bind { [weak self] _ in
+                self?.weatherView.reloadData()
+            }
+        }
+        
+        if viewModel.isSearching {
+            weatherView.setupWhenSearching()
+        } else {
+            weatherView.setupWhenNotSearching()
+        }
+
+    }
+}
+
 
 // MARK: UITableViewDelegate, UITableViewDataSource
 
 extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        viewModel.forecast?.forecasts.count ?? 0
+        switch viewModel.isSearching != false {
+        case false:
+            viewModel.forecast.value?.forecasts.count ?? 0
+        case true:
+            viewModel.cities.value?.count ?? 0
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        guard let cell = tableView.dequeueReusableCell(withIdentifier: ForecastTableViewCell.identifier, for: indexPath) as? ForecastTableViewCell else {
-            return UITableViewCell()
+        switch viewModel.isSearching != false {
+        case false:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: ForecastTableViewCell.identifier, for: indexPath) as? ForecastTableViewCell else {
+                return UITableViewCell()
+            }
+            
+            if let forecast = viewModel.forecast.value?.forecasts[indexPath.row] {
+                let cellModel = ForecastTableViewCellModel(
+                    description: forecast.weatherDescription.first?.weatherDescription.capitalized,
+                    minTemp: forecast.temperature.min,
+                    maxTemp: forecast.temperature.max,
+                    date: forecast.date
+                )
+                cell.configure(with: cellModel)
+            }
+            return cell
+            
+        case true:
+            guard let cell = tableView.dequeueReusableCell(withIdentifier: SearchTableViewCell.identifier, for: indexPath) as? SearchTableViewCell else {
+                return UITableViewCell()
+            }
+            
+            if let city = viewModel.cities.value?[indexPath.row] {
+                let cellModel = CityTableViewCellModel(
+                    name: city.name,
+                    country: city.country,
+                    state: city.state,
+                    lat: city.lat,
+                    lon: city.lon
+                )
+                cell.configure(with: cellModel)
+            }
+            return cell
         }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         
-        if let forecast = viewModel.forecast?.forecasts[indexPath.row] {
-            let cellModel = ForecastTableViewCellModel(
-                description: forecast.weatherDescription.first?.weatherDescription.capitalized,
-                minTemp: forecast.temperature.min,
-                maxTemp: forecast.temperature.max,
-                date: forecast.date
-            )
-            cell.configure(with: cellModel)
-        }
-        return cell
+        guard let city = viewModel.cities.value?[indexPath.row] else { return }
+        
+        fetchWeatherAndForcast(for: CLLocationCoordinate2D(latitude: city.lat, longitude: city.lon))
+        searchController.isActive = false
+        hideNavigationTitle()
+        setupViewModel()
     }
 }
 

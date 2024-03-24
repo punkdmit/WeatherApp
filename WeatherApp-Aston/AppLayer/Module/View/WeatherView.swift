@@ -22,11 +22,12 @@ final class WeatherView: UIView {
     }
     
     //MARK: Private properties
-    
+        
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero)
         tableView.backgroundColor = .white
         tableView.register(ForecastTableViewCell.self, forCellReuseIdentifier: ForecastTableViewCell.identifier)
+        tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: SearchTableViewCell.identifier)
         tableView.dataSource = dataSource
         tableView.delegate = delegate
         return tableView
@@ -36,8 +37,6 @@ final class WeatherView: UIView {
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = AppConstants.normalSpacing
-        stack.layer.borderColor = UIColor.red.cgColor
-        stack.layer.borderWidth = 2
         return stack
     }()
 
@@ -96,6 +95,18 @@ extension WeatherView {
             self.tableView.reloadData()
         }
     }
+    
+    func setupWhenSearching() {
+        tableView.tableHeaderView = nil
+    }
+    
+    func setupWhenNotSearching() {
+        tableView.tableHeaderView = rootStack
+        rootStack.snp.makeConstraints {
+            $0.width.equalToSuperview()
+            $0.top.equalTo(tableView.snp.top)
+        }
+    }
 }
 
 //MARK: Private methods
@@ -108,22 +119,20 @@ private extension WeatherView {
     }
     
     func configureLayout() {
-        addSubview(rootStack)
+        addSubview(tableView)
+        tableView.addSubview(rootStack)
+        tableView.tableHeaderView = rootStack
         rootStack.addArrangedSubview(cityLabel)
         rootStack.addArrangedSubview(temperatureLabel)
         rootStack.addArrangedSubview(descriptionLabel)
         
-        addSubview(tableView)
-        
         rootStack.snp.makeConstraints {
             $0.width.equalToSuperview()
-            $0.top.equalTo(safeAreaLayoutGuide.snp.top)
+            $0.top.equalTo(tableView.snp.top)
         }
         
         tableView.snp.makeConstraints {
-            $0.top.equalTo(rootStack.snp.bottom).offset(AppConstants.normalSpacing)
-//            $0.width.equalToSuperview()
-            $0.left.right.bottom.equalToSuperview()
+            $0.edges.equalToSuperview()
         }
     }
 }
