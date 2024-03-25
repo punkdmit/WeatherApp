@@ -7,10 +7,10 @@
 
 import Foundation
 
-struct CitiesResponse: Codable {
+struct CityResponse: Codable {
     let name: String
     let country: String
-    let state: String
+    let state: String?
     let lat: Double
     let lon: Double
     
@@ -22,7 +22,3 @@ struct CitiesResponse: Codable {
         case lon
     }
 }
-
-//struct CitiesContainer: Codable {
-//    let data: [CitiesResponse]
-//}

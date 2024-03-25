@@ -10,19 +10,20 @@ import CoreLocation
 final class LocationService: NSObject {
     
     private let locationManager = CLLocationManager()
-    var currentLocation: CLLocationCoordinate2D?
+    var currentLocation = Bindable<CLLocationCoordinate2D?>(nil)
+    
+    static let shared = LocationService()
     
     //MARK: Inizialization
     
-    override init() {
+    private override init() {
         super.init()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.requestWhenInUseAuthorization()
     }
-    
-    func startUpdatingLocation() {
-        locationManager.startUpdatingLocation()
+
+    func requestLocation() {
+        locationManager.requestLocation()
     }
 }
 
@@ -31,7 +32,7 @@ final class LocationService: NSObject {
 extension LocationService: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        currentLocation = locations.first?.coordinate
+        currentLocation.value = locations.first?.coordinate
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {

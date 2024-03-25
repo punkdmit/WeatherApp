@@ -18,7 +18,6 @@ final class SearchTableViewCell: UITableViewCell {
 
     private lazy var rootStackView: UIStackView = {
         let stack = UIStackView()
-        stack.spacing = AppConstants.compactSpacing
         stack.axis = .horizontal
         stack.distribution = .fill
         return stack
@@ -45,6 +44,8 @@ final class SearchTableViewCell: UITableViewCell {
         return label
     }()
     
+    private lazy var rightView = UIView()
+    
     //MARK: Inizialization
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
@@ -69,8 +70,12 @@ extension SearchTableViewCell {
     
     func configure(with model: CityTableViewCellModel) {
         cityLabel.text = model.name + ", "
-        countryLabel.text = model.country + ", "
-        stateLabel.text = model.state
+        countryLabel.text = model.country
+        if !model.state.isEmpty {
+            stateLabel.text = ", " + model.state
+        } else {
+            stateLabel.text = nil
+        }
     }
 }
 
@@ -88,6 +93,9 @@ private extension SearchTableViewCell {
         rootStackView.addArrangedSubview(cityLabel)
         rootStackView.addArrangedSubview(countryLabel)
         rootStackView.addArrangedSubview(stateLabel)
+        rootStackView.addArrangedSubview(rightView)
+        
+        cityLabel.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         
         rootStackView.snp.makeConstraints {
             $0.edges.equalToSuperview().inset(AppConstants.normalSpacing)

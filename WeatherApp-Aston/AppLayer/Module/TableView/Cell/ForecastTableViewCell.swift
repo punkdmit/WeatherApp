@@ -17,8 +17,6 @@ final class ForecastTableViewCell: UITableViewCell {
         static let separator = " ⎯ "
     }
     
-
-    
     //MARK: Static properties
         
     static var identifier: String { "\(Self.self)" }

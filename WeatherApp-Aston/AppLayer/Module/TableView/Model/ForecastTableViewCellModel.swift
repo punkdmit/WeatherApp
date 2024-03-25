@@ -12,4 +12,11 @@ struct ForecastTableViewCellModel {
     let minTemp: Double?
     let maxTemp: Double?
     let date: String?
+    
+    func getDate(date: String?) {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        dateFormatter.string(for: date)
+    }
 }

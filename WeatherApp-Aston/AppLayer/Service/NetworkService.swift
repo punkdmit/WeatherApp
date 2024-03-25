@@ -28,10 +28,32 @@ private extension String {
     static let baseGeoURL = "http://api.openweathermap.org/geo/1.0"
     static let apiKey = "2d156d61ee4d8e9cd8495b63ff4e8c76"
     static let units = "metric"
-    static let citiesLimit = "5"
+    static let citiesLimit = "3"
 }
 
 final class NetworkService {
+    
+    func getWeather(for location: CLLocationCoordinate2D, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
+        guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {
+            completion(.failure(NSError.networkError))
+            return
+        }
+        
+        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                completion(.failure(error))
+            } else if let data = data {
+                if let weather = self.parseWeatherData(data: data) {
+                    completion(.success(weather))
+                } else {
+                    completion(.failure(NSError.parseError))
+                }
+            } else {
+                completion(.failure(NSError.networkError))
+            }
+        }
+        task.resume()
+    }
     
     func getForecast(for location: CLLocationCoordinate2D, completion: @escaping (Result<ForecastResponse, Error>) -> Void) {
         guard let request = createLocationWeatherRequest(
@@ -58,55 +80,69 @@ final class NetworkService {
         task.resume()
     }
     
-    func getForecast(for city: String, completion: @escaping (Result<ForecastResponse, Error>) -> Void) {
-        guard let request = createCityWeatherRequest(
-            for: city,
-            Endpoints.forecast
-        ) else {
-            completion(.failure(NSError.networkError))
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response , error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let data = data {
-                if let forecast = self.parseForecastData(data: data) {
-                    completion(.success(forecast))
-                } else {
-                    completion(.failure(NSError.parseError))
-                }
-            } else {
-                completion(.failure(NSError.networkError))
-            }
-        }
-        task.resume()
-    }
     
-    func getWeather(for city: String, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        guard let request = createCityWeatherRequest(for: city, .weather) else {
-            completion(.failure(NSError.networkError))
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let data = data {
-                if let weather = self.parseWeatherData(data: data) {
-                    completion(.success(weather))
-                } else {
-                    completion(.failure(NSError.parseError))
-                }
-            } else {
-                completion(.failure(NSError.networkError))
-            }
-        }
-        task.resume()
-    }
     
-    func getCities(for city: String, completion: @escaping (Result<[CitiesResponse], Error>) -> Void) {
-        guard let request = createCityListRequest(for: city, .direct) else {
+    
+    
+    
+    
+//    func getWeather(for cityName: String, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
+//        guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {
+//            completion(.failure(NSError.networkError))
+//            return
+//        }
+//        
+//        let task = URLSession.shared.dataTask(with: request) { data, response, error in
+//            if let error = error {
+//                completion(.failure(error))
+//            } else if let data = data {
+//                if let weather = self.parseWeatherData(data: data) {
+//                    completion(.success(weather))
+//                } else {
+//                    completion(.failure(NSError.parseError))
+//                }
+//            } else {
+//                completion(.failure(NSError.networkError))
+//            }
+//        }
+//        task.resume()
+//    }
+//    
+//    func getForecast(for cityName: String, completion: @escaping (Result<ForecastResponse, Error>) -> Void) {
+//        guard let request = createLocationWeatherRequest(
+//            for: location,
+//            Endpoints.forecast
+//        ) else {
+//            completion(.failure(NSError.networkError))
+//            return
+//        }
+//        
+//        let task = URLSession.shared.dataTask(with: request) { data, response , error in
+//            if let error = error {
+//                completion(.failure(error))
+//            } else if let data = data {
+//                if let forecast = self.parseForecastData(data: data) {
+//                    completion(.success(forecast))
+//                } else {
+//                    completion(.failure(NSError.parseError))
+//                }
+//            } else {
+//                completion(.failure(NSError.networkError))
+//            }
+//        }
+//        task.resume()
+//    }
+//    
+    
+    
+    
+    
+    
+    
+    
+    
+    func getCities(for cityName: String, completion: @escaping (Result<[CityResponse], Error>) -> Void) {
+        guard let request = createCityListRequest(for: cityName, .direct) else {
             completion(.failure(NSError.networkError))
             return
         }
@@ -125,53 +161,6 @@ final class NetworkService {
             }
         }
         task.resume()
-    }
-    
-    func getWeather(for location: CLLocationCoordinate2D, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-        guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {
-            completion(.failure(NSError.networkError))
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-            } else if let data = data {
-                if let weather = self.parseWeatherData(data: data) {
-                    completion(.success(weather))
-                } else {
-                    completion(.failure(NSError.parseError))
-                }
-            } else {
-                completion(.failure(NSError.networkError))
-            }
-        }
-        task.resume()
-    }
-        
-    private func createCityWeatherRequest(for city: String, _ endpoint: Endpoints) -> URLRequest? {
-        guard let url = URL(string: .baseURL + endpoint.rawValue) else {
-            return nil
-        }
-        
-        var components = URLComponents(url: url, resolvingAgainstBaseURL: true)
-        components?.queryItems = [
-            URLQueryItem(name: "q", value: city),
-            URLQueryItem(name: "appid", value: .apiKey),
-            URLQueryItem(name: "units", value: .units)
-        ]
-        
-//        if let forecastDays = forecastDays {
-//            components?.queryItems?.append( URLQueryItem(name: "cnt", value: "\(forecastDays)"))
-//        }
-        
-        guard let finalURL = components?.url else {
-            return nil
-        }
-        
-        var request = URLRequest(url: finalURL)
-        request.httpMethod = HttpType.get.rawValue
-        return request
     }
     
     private func createLocationWeatherRequest(for location: CLLocationCoordinate2D, _ endpoint: Endpoints) -> URLRequest? {
@@ -239,10 +228,13 @@ final class NetworkService {
         }
     }
     
-    private func parseCitiesData(data: Data) -> [CitiesResponse]? {
+    private func parseCitiesData(data: Data) -> [CityResponse]? {
         let decoder = JSONDecoder()
         do {
-            let citiesData = try decoder.decode([CitiesResponse].self, from: data)
+            if let jsonString = String(data: data, encoding: .utf8) {
+                        print("JSON String: \(jsonString)")
+                    }
+            let citiesData = try decoder.decode([CityResponse].self, from: data)
             return citiesData
         } catch {
             print("Ошибка декордирования городов: \(error)")

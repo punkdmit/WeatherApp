@@ -9,6 +9,12 @@ import SnapKit
 
 final class WeatherView: UIView {
     
+    // MARK: Constants
+    
+    private enum Constants {
+        static let currentWeatherButtonText = "Current location"
+    }
+    
     weak var dataSource: UITableViewDataSource? {
         didSet {
             tableView.dataSource = dataSource
@@ -21,6 +27,8 @@ final class WeatherView: UIView {
         }
     }
     
+    var currentWeatherButtonAction: Bindable<Void> = Bindable(())
+    
     //MARK: Private properties
         
     private lazy var tableView: UITableView = {
@@ -28,12 +36,10 @@ final class WeatherView: UIView {
         tableView.backgroundColor = .white
         tableView.register(ForecastTableViewCell.self, forCellReuseIdentifier: ForecastTableViewCell.identifier)
         tableView.register(SearchTableViewCell.self, forCellReuseIdentifier: SearchTableViewCell.identifier)
-        tableView.dataSource = dataSource
-        tableView.delegate = delegate
         return tableView
     }()
     
-    private lazy var rootStack: UIStackView = {
+    private lazy var tableHeaderStack: UIStackView = {
         let stack = UIStackView()
         stack.axis = .vertical
         stack.spacing = AppConstants.normalSpacing
@@ -62,6 +68,14 @@ final class WeatherView: UIView {
         label.textAlignment = .center
         label.font = RegularFont.p1
         return label
+    }()
+    
+    private lazy var requestCurrentWeatherButton: UIButton = {
+        let button = UIButton()
+        button.setTitle(Constants.currentWeatherButtonText, for: .normal)
+        button.setTitleColor(.systemBlue, for: .normal)
+        button.addTarget(self, action: #selector(requestCurrentWeatherButtonTapped), for: .touchUpInside)
+        return button
     }()
     
     //MARK: Inizialization
@@ -100,12 +114,29 @@ extension WeatherView {
         tableView.tableHeaderView = nil
     }
     
-    func setupWhenNotSearching() {
-        tableView.tableHeaderView = rootStack
-        rootStack.snp.makeConstraints {
+    func setupWhenFinishSearching() {
+        tableView.tableHeaderView = tableHeaderStack
+        tableHeaderStack.snp.makeConstraints {
             $0.width.equalToSuperview()
             $0.top.equalTo(tableView.snp.top)
         }
+    }
+    
+    func showCurrentWeatherButton() {
+        requestCurrentWeatherButton.isHidden = false
+    }
+    
+    func hideCurrentWeatherButton() {
+        requestCurrentWeatherButton.isHidden = true
+    }
+}
+
+//MARK: Obj-c methods
+
+extension WeatherView {
+    
+    @objc private func requestCurrentWeatherButtonTapped() {
+        currentWeatherButtonAction.value = ()
     }
 }
 
@@ -120,13 +151,14 @@ private extension WeatherView {
     
     func configureLayout() {
         addSubview(tableView)
-        tableView.addSubview(rootStack)
-        tableView.tableHeaderView = rootStack
-        rootStack.addArrangedSubview(cityLabel)
-        rootStack.addArrangedSubview(temperatureLabel)
-        rootStack.addArrangedSubview(descriptionLabel)
+        tableView.tableHeaderView = tableHeaderStack
         
-        rootStack.snp.makeConstraints {
+        tableHeaderStack.addArrangedSubview(cityLabel)
+        tableHeaderStack.addArrangedSubview(temperatureLabel)
+        tableHeaderStack.addArrangedSubview(descriptionLabel)
+        tableHeaderStack.addArrangedSubview(requestCurrentWeatherButton)
+        
+        tableHeaderStack.snp.makeConstraints {
             $0.width.equalToSuperview()
             $0.top.equalTo(tableView.snp.top)
         }
