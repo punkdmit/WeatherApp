@@ -11,7 +11,8 @@ import CoreLocation
 final class WeatherViewModel {
         
     var weather = Bindable<WeatherResponse?>(nil)
-    var forecast = Bindable<ForecastResponse?>(nil)
+//    var forecast = Bindable<ForecastResponse?>(nil)
+    var forecast = Bindable<FilteredForecastResponse?>(nil)
     var cities = Bindable<[CityResponse]?>(nil)
     
     var isSearching = Bindable<Bool>(false)

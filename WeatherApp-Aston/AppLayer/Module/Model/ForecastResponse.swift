@@ -48,11 +48,9 @@ struct DailyForecast: Codable {
 }
 
 struct ForecastCondition: Codable {
-    let weather: String
     let weatherDescription: String
     
     enum CodingKeys: String, CodingKey {
-        case weather = "main"
         case weatherDescription = "description"
     }
 }

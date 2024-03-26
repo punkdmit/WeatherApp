@@ -17,6 +17,7 @@ final class WeatherViewController: UIViewController {
         static let searchBarTitle = "Input city"
         static let inputDateFormat = "yyyy-MM-dd HH:mm:ss"
         static let outputDateFormat = "MMM d"
+        static let localeIdentifire = "en_EN"
     }
     
     //MARK: Private properties
@@ -24,6 +25,7 @@ final class WeatherViewController: UIViewController {
     private var searchController = UISearchController(searchResultsController: nil)
     private let viewModel = WeatherViewModel()
     private let dateFormatter = DateFormatter()
+    private let locationService = LocationService()
     
     private lazy var weatherView: WeatherView = {
         let view = WeatherView()
@@ -110,8 +112,7 @@ extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
         
         guard let city = viewModel.cities.value?[indexPath.row] else { return }
         
-        showCurrentWeatherButton()
-        hideNavigationTitle()
+        setupSearchedLocationView()
         
         setupViewModel(for: CLLocationCoordinate2D(latitude: city.lat, longitude: city.lon))
         searchController.isActive = false
@@ -123,8 +124,7 @@ extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
 private extension WeatherViewController {
     
     func setupUI() {
-        showNavigationTitle()
-        hideCurrentWeatherButton()
+        setupCurrentLocationView()
         setupSearchController()
         configureLayout()
     }
@@ -138,17 +138,25 @@ private extension WeatherViewController {
     }
     
     func setupViewModel() {
-        LocationService.shared.currentLocation.bind { [weak self] location in
-            
-            guard let location = location, let self = self else {
-                return
+//        LocationService.shared.requestLocation()
+//        locationManager.requestLocation()
+        
+//        locationService.locationGroup.notify(queue: .main) {
+//            guard let location = self.locationService.currentLocation else {
+//                return
+//            }
+//            self.viewModel.fetchWeather(for: location)
+//            self.viewModel.fetchForecast(for: location)
+//        }
+        DispatchQueue.global().async {
+            self.locationService.locationSemaphore.wait()
+            DispatchQueue.main.async {
+                guard let location = self.locationService.currentLocation else {
+                    return
+                }
+                self.viewModel.fetchWeather(for: location)
+                self.viewModel.fetchForecast(for: location)
             }
-            
-            viewModel.fetchWeather(for: location)
-            viewModel.fetchForecast(for: location)
-            
-//            showNavigationTitle()
-//            hideCurrentWeatherButton()
         }
     }
     
@@ -179,11 +187,13 @@ private extension WeatherViewController {
         }
         
         weatherView.currentWeatherButtonAction.bind { [weak self] _ in
-            guard let self = self else { return }
+            guard let self = self, let location = self.locationService.currentLocation else {
+                return
+            }
             
-            showNavigationTitle()
-            hideCurrentWeatherButton()
-            LocationService.shared.requestLocation()
+            viewModel.fetchWeather(for: location)
+            viewModel.fetchForecast(for: location)
+            setupCurrentLocationView()
         }
         
         viewModel.searchText.bind { [weak self] text in
@@ -218,12 +228,14 @@ private extension WeatherViewController {
         weatherView.setupWhenFinishSearching()
     }
     
-    func showCurrentWeatherButton() {
+    func setupSearchedLocationView() {
         weatherView.showCurrentWeatherButton()
+        navigationItem.title = nil
     }
     
-    func hideCurrentWeatherButton() {
+    func setupCurrentLocationView() {
         weatherView.hideCurrentWeatherButton()
+        navigationItem.title = Constants.navigationItemTitle
     }
 
     func setupSearchController() {
@@ -236,21 +248,13 @@ private extension WeatherViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
     }
     
-    func showNavigationTitle() {
-        navigationItem.title = Constants.navigationItemTitle
-    }
-    
-    func hideNavigationTitle() {
-        navigationItem.title = nil
-    }
-    
     func formatDate(from string: String) -> String? {
         let inputFormatter = DateFormatter()
         inputFormatter.dateFormat = Constants.inputDateFormat
         
         if let date = inputFormatter.date(from: string) {
             let outputFormatter = DateFormatter()
-            outputFormatter.locale = Locale(identifier: "en_EN")
+            outputFormatter.locale = Locale(identifier: Constants.localeIdentifire)
             outputFormatter.dateFormat = Constants.outputDateFormat
             
             return outputFormatter.string(from: date)
