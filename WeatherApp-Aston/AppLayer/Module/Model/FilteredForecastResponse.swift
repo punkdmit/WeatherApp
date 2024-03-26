@@ -9,12 +9,12 @@ import Foundation
 
 struct FilteredForecastResponse: Codable {
     let city: String
-    let dailyForecasts: [CustomDailyForecast]
+    let forecasts: [CustomDailyForecast]
 }
 
 struct CustomDailyForecast: Codable {
-    let date: Date
-    let minTemperature: Double?
-    let maxTemperature: Double?
+    let date: String
+    let minTemperature: Int?
+    let maxTemperature: Int?
     let descriptions: [String?]
 }

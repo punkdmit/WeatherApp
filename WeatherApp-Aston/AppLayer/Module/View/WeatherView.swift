@@ -13,6 +13,7 @@ final class WeatherView: UIView {
     
     private enum Constants {
         static let currentWeatherButtonText = "Current location"
+        static let temperatureMetric = "°C"
     }
     
     weak var dataSource: UITableViewDataSource? {
@@ -97,7 +98,7 @@ extension WeatherView {
     func update(with weather: WeatherResponse) {
         DispatchQueue.main.async {
             self.cityLabel.text = weather.city
-            self.temperatureLabel.text = "\(weather.temperature.value)°C"
+            self.temperatureLabel.text = "\(weather.temperature.value)" + Constants.temperatureMetric
             self.descriptionLabel.text = WeatherResponse.returnUppercased(
                 weather: weather.weatherDescription.first?.weatherDescription
             )

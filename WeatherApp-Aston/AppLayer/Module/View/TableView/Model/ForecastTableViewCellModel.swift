@@ -8,8 +8,8 @@
 import Foundation
 
 struct ForecastTableViewCellModel {
-    let description: String?
-    let minTemp: Double?
-    let maxTemp: Double?
     let date: String?
+    let description: String?
+    let minTemp: Int?
+    let maxTemp: Int?
 }

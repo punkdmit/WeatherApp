@@ -99,8 +99,8 @@ extension ForecastTableViewCell {
     
     func configure(with model: ForecastTableViewCellModel) {
         dateLabel.text = model.date
-        minTempLabel.text = "\(model.minTemp ?? Double())" + Constants.temperatureMetric + Constants.separator
-        maxTempLabel.text = "\(model.maxTemp ?? Double())" + Constants.temperatureMetric
+        minTempLabel.text = "\(model.minTemp ?? Int())" + Constants.temperatureMetric + Constants.separator
+        maxTempLabel.text = "\(model.maxTemp ?? Int())" + Constants.temperatureMetric
         descriptionLabel.text = model.description
     }
 }

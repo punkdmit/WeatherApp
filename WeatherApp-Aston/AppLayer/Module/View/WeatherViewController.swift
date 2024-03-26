@@ -96,10 +96,10 @@ extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
             
             if let forecast = viewModel.forecast.value?.forecasts[indexPath.row] {
                 let cellModel = ForecastTableViewCellModel(
-                    description: forecast.weatherDescription.first?.weatherDescription.capitalized,
-                    minTemp: forecast.temperature.min,
-                    maxTemp: forecast.temperature.max,
-                    date: formatDate(from: forecast.date)
+                    date: forecast.date,
+                    description: forecast.descriptions.first??.description.capitalized,
+                    minTemp: forecast.minTemperature,
+                    maxTemp: forecast.maxTemperature
                 )
                 cell.configure(with: cellModel)
             }
@@ -138,16 +138,6 @@ private extension WeatherViewController {
     }
     
     func setupViewModel() {
-//        LocationService.shared.requestLocation()
-//        locationManager.requestLocation()
-        
-//        locationService.locationGroup.notify(queue: .main) {
-//            guard let location = self.locationService.currentLocation else {
-//                return
-//            }
-//            self.viewModel.fetchWeather(for: location)
-//            self.viewModel.fetchForecast(for: location)
-//        }
         DispatchQueue.global().async {
             self.locationService.locationSemaphore.wait()
             DispatchQueue.main.async {
@@ -167,9 +157,6 @@ private extension WeatherViewController {
         
         viewModel.fetchWeather(for: coordinates)
         viewModel.fetchForecast(for: coordinates)
-        
-//        showCurrentWeatherButton()
-//        hideNavigationTitle()
     }
     
     func bindViewModel() {
@@ -248,19 +235,14 @@ private extension WeatherViewController {
         navigationItem.hidesSearchBarWhenScrolling = false
     }
     
-    func formatDate(from string: String) -> String? {
-        let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = Constants.inputDateFormat
-        
-        if let date = inputFormatter.date(from: string) {
-            let outputFormatter = DateFormatter()
-            outputFormatter.locale = Locale(identifier: Constants.localeIdentifire)
-            outputFormatter.dateFormat = Constants.outputDateFormat
+    func formatDate(from date: Date) -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.locale = Locale(identifier: Constants.localeIdentifire)
+        dateFormatter.timeStyle = .short
+        let formattedDate = dateFormatter.string(from: date)
             
-            return outputFormatter.string(from: date)
-        } else {
-            return nil
-        }
+        return formattedDate
     }
 }
 

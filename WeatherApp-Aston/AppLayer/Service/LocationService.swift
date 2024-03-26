@@ -11,7 +11,6 @@ final class LocationService: NSObject {
     
     /*private*/ let locationManager = CLLocationManager()
     var currentLocation: CLLocationCoordinate2D?
-//    let locationGroup = DispatchGroup()
     let locationSemaphore = DispatchSemaphore(value: 0)
 
 
@@ -20,10 +19,8 @@ final class LocationService: NSObject {
     //MARK: Inizialization
     
     /*private*/ override init() {
-//        locationGroup.enter()
-        locationManager.requestWhenInUseAuthorization()
         super.init()
-//        locationSemaphore.signal()
+        locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         requestLocation()
@@ -40,13 +37,11 @@ extension LocationService: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         currentLocation = locations.first?.coordinate
-//            locationGroup.leave()
         locationSemaphore.signal()
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Ошибка: \(error)")
-//            locationGroup.leave()
         locationSemaphore.signal()
     }
 }

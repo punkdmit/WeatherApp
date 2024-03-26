@@ -55,7 +55,7 @@ final class NetworkService {
         task.resume()
     }
     
-    func getForecast(for location: CLLocationCoordinate2D, completion: @escaping (Result</*ForecastResponse*/FilteredForecastResponse, Error>) -> Void) {
+    func getForecast(for location: CLLocationCoordinate2D, completion: @escaping (Result<ForecastResponse, Error>) -> Void) {
         guard let request = createLocationWeatherRequest(
             for: location,
             Endpoints.forecast
@@ -69,10 +69,6 @@ final class NetworkService {
                 completion(.failure(error))
             } else if let data = data {
                 if let forecast = self.parseForecastData(data: data) {
-                    
-//                    let customForecast = self.transformForecastData(forecast)
-//                    completion(.success(customForecast))
-                    
                     completion(.success(forecast))
                 } else {
                     completion(.failure(NSError.parseError))
@@ -89,9 +85,9 @@ final class NetworkService {
     
     
     
-    
+//    
 //    func getWeather(for cityName: String, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-//        guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {
+//        guard let request = createLocationWeatherRequest(for: cityName, Endpoints.weather) else {
 //            completion(.failure(NSError.networkError))
 //            return
 //        }
@@ -221,13 +217,11 @@ final class NetworkService {
         }
     }
     
-    private func parseForecastData(data: Data) -> /*ForecastResponse?*/FilteredForecastResponse?{
+    private func parseForecastData(data: Data) -> ForecastResponse?/*FilteredForecastResponse?*/{
         let decoder = JSONDecoder()
         do {
-            let forecastData = try decoder.decode(ForecastResponse.self /*FilteredForecastResponse.self*/, from: data)
-            let filtered = transformForecastData(forecastData)
-            return filtered
-//            return forecastData
+            let forecastData = try decoder.decode(ForecastResponse.self, from: data)
+            return forecastData
         } catch {
             print("Ошибка декордирования прогноза: \(error)")
             return nil
@@ -244,27 +238,4 @@ final class NetworkService {
             return nil
         }
     }
-    
-    private func transformForecastData(_ forecast: ForecastResponse) -> FilteredForecastResponse {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
-        
-        let groupedForecasts = Dictionary(grouping: forecast.forecasts) { forecast -> Date in
-            guard let date = dateFormatter.date(from: forecast.date) else {
-                fatalError("Не удалось преобразовать дату")
-            }
-            return Calendar.current.startOfDay(for: date)
-        }
-        
-        let dailyForecasts = groupedForecasts.map { date, forecasts in
-            let minTemperature = forecasts.min(by: { $0.temperature.min < $1.temperature.min })?.temperature.min
-            let maxTemperature = forecasts.max(by: { $0.temperature.max < $1.temperature.max })?.temperature.max
-            let descriptions = forecasts.flatMap { $0.weatherDescription.map { $0.weatherDescription } }
-            return CustomDailyForecast(date: date, minTemperature: minTemperature, maxTemperature: maxTemperature, descriptions: descriptions)
-        }
-        
-        return FilteredForecastResponse(city: forecast.city.name, dailyForecasts: dailyForecasts)
-    }
-
-    
 }

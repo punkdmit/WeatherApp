@@ -13,12 +13,4 @@ struct CityResponse: Codable {
     let state: String?
     let lat: Double
     let lon: Double
-    
-    enum CodingKeys: String, CodingKey {
-        case name
-        case country
-        case state
-        case lat
-        case lon
-    }
 }
