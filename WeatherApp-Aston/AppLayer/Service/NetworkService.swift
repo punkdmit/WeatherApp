@@ -79,68 +79,7 @@ final class NetworkService {
         }
         task.resume()
     }
-    
-    
-    
-    
-    
-    
-//    
-//    func getWeather(for cityName: String, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
-//        guard let request = createLocationWeatherRequest(for: cityName, Endpoints.weather) else {
-//            completion(.failure(NSError.networkError))
-//            return
-//        }
-//        
-//        let task = URLSession.shared.dataTask(with: request) { data, response, error in
-//            if let error = error {
-//                completion(.failure(error))
-//            } else if let data = data {
-//                if let weather = self.parseWeatherData(data: data) {
-//                    completion(.success(weather))
-//                } else {
-//                    completion(.failure(NSError.parseError))
-//                }
-//            } else {
-//                completion(.failure(NSError.networkError))
-//            }
-//        }
-//        task.resume()
-//    }
-//    
-//    func getForecast(for cityName: String, completion: @escaping (Result<ForecastResponse, Error>) -> Void) {
-//        guard let request = createLocationWeatherRequest(
-//            for: location,
-//            Endpoints.forecast
-//        ) else {
-//            completion(.failure(NSError.networkError))
-//            return
-//        }
-//        
-//        let task = URLSession.shared.dataTask(with: request) { data, response , error in
-//            if let error = error {
-//                completion(.failure(error))
-//            } else if let data = data {
-//                if let forecast = self.parseForecastData(data: data) {
-//                    completion(.success(forecast))
-//                } else {
-//                    completion(.failure(NSError.parseError))
-//                }
-//            } else {
-//                completion(.failure(NSError.networkError))
-//            }
-//        }
-//        task.resume()
-//    }
-//    
-    
-    
-    
-    
-    
-    
-    
-    
+
     func getCities(for cityName: String, completion: @escaping (Result<[CityResponse], Error>) -> Void) {
         guard let request = createCityListRequest(for: cityName, .direct) else {
             completion(.failure(NSError.networkError))

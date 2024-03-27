@@ -10,7 +10,7 @@
 		BFB8EA3E915C980188C2BEE9 /* Pods_WeatherApp_Aston.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 359714E6727D6FE13C04FE37 /* Pods_WeatherApp_Aston.framework */; };
 		F81DA23E2BA86D42009C4B17 /* WeatherViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81DA23D2BA86D42009C4B17 /* WeatherViewModel.swift */; };
 		F81DA2402BA8754B009C4B17 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F81DA23F2BA8754B009C4B17 /* WeatherView.swift */; };
-		F82429572BB3131C00A95B06 /* FilteredForecastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82429562BB3131C00A95B06 /* FilteredForecastResponse.swift */; };
+		F82429572BB3131C00A95B06 /* ConvertedForecastResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = F82429562BB3131C00A95B06 /* ConvertedForecastResponse.swift */; };
 		F836783D2BA6F93A00372C3D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F836783C2BA6F93A00372C3D /* AppDelegate.swift */; };
 		F836783F2BA6F93A00372C3D /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F836783E2BA6F93A00372C3D /* SceneDelegate.swift */; };
 		F83678412BA6F93A00372C3D /* WeatherViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = F83678402BA6F93A00372C3D /* WeatherViewController.swift */; };
@@ -38,7 +38,7 @@
 		54C0EFB966FEA3506A92E777 /* Pods-WeatherApp-Aston.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WeatherApp-Aston.release.xcconfig"; path = "Target Support Files/Pods-WeatherApp-Aston/Pods-WeatherApp-Aston.release.xcconfig"; sourceTree = "<group>"; };
 		F81DA23D2BA86D42009C4B17 /* WeatherViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherViewModel.swift; sourceTree = "<group>"; };
 		F81DA23F2BA8754B009C4B17 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
-		F82429562BB3131C00A95B06 /* FilteredForecastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilteredForecastResponse.swift; sourceTree = "<group>"; };
+		F82429562BB3131C00A95B06 /* ConvertedForecastResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConvertedForecastResponse.swift; sourceTree = "<group>"; };
 		F83678392BA6F93A00372C3D /* WeatherApp-Aston.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "WeatherApp-Aston.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F836783C2BA6F93A00372C3D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F836783E2BA6F93A00372C3D /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -184,7 +184,7 @@
 			children = (
 				F867D3A02BA84E310006C667 /* WeatherResponse.swift */,
 				F83717E22BAB01CC006171CC /* ForecastResponse.swift */,
-				F82429562BB3131C00A95B06 /* FilteredForecastResponse.swift */,
+				F82429562BB3131C00A95B06 /* ConvertedForecastResponse.swift */,
 				F878CEBB2BADFB5E0044F40E /* CityResponse.swift */,
 			);
 			path = Model;
@@ -375,7 +375,7 @@
 				F83678582BA6FFDD00372C3D /* Assets.swift in Sources */,
 				F867D3A12BA84E310006C667 /* WeatherResponse.swift in Sources */,
 				F81DA23E2BA86D42009C4B17 /* WeatherViewModel.swift in Sources */,
-				F82429572BB3131C00A95B06 /* FilteredForecastResponse.swift in Sources */,
+				F82429572BB3131C00A95B06 /* ConvertedForecastResponse.swift in Sources */,
 				F878CEBF2BAE0BB30044F40E /* SearchTableViewCell.swift in Sources */,
 				F83717E32BAB01CC006171CC /* ForecastResponse.swift in Sources */,
 				F83717EB2BAB7707006171CC /* ForecastTableViewCellModel.swift in Sources */,

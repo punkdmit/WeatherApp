@@ -9,24 +9,29 @@ import CoreLocation
 
 final class LocationService: NSObject {
     
-    /*private*/ let locationManager = CLLocationManager()
+    let locationManager = CLLocationManager()
     var currentLocation: CLLocationCoordinate2D?
     let locationSemaphore = DispatchSemaphore(value: 0)
 
-
-//    static let shared = LocationService()
+    let locationGroup = DispatchGroup()
     
     //MARK: Inizialization
     
-    /*private*/ override init() {
+    override init() {
         super.init()
         locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         requestLocation()
     }
+}
 
+//MARK: Internal properties
+
+extension LocationService {
+    
     func requestLocation() {
+        locationGroup.enter()
         locationManager.requestLocation()
     }
 }
@@ -37,11 +42,11 @@ extension LocationService: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         currentLocation = locations.first?.coordinate
-        locationSemaphore.signal()
+        locationGroup.leave()
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print("Ошибка: \(error)")
-        locationSemaphore.signal()
+        locationGroup.leave()
     }
 }

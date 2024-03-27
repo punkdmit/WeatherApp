@@ -97,8 +97,8 @@ extension WeatherView {
     
     func update(with weather: WeatherResponse) {
         DispatchQueue.main.async {
-            self.cityLabel.text = weather.city
-            self.temperatureLabel.text = "\(weather.temperature.value)" + Constants.temperatureMetric
+            self.cityLabel.text = weather.city 
+            self.temperatureLabel.text = String(Int(weather.temperature.value)) + Constants.temperatureMetric
             self.descriptionLabel.text = WeatherResponse.returnUppercased(
                 weather: weather.weatherDescription.first?.weatherDescription
             )

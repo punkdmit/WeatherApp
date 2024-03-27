@@ -25,7 +25,6 @@ final class WeatherViewController: UIViewController {
     private var searchController = UISearchController(searchResultsController: nil)
     private let viewModel = WeatherViewModel()
     private let dateFormatter = DateFormatter()
-    private let locationService = LocationService()
     
     private lazy var weatherView: WeatherView = {
         let view = WeatherView()
@@ -33,7 +32,7 @@ final class WeatherViewController: UIViewController {
         view.delegate = self
         return view
     }()
-
+    
     //MARK: Lyfe Cycle
     
     override func viewDidLoad() {
@@ -97,7 +96,7 @@ extension WeatherViewController: UITableViewDelegate, UITableViewDataSource {
             if let forecast = viewModel.forecast.value?.forecasts[indexPath.row] {
                 let cellModel = ForecastTableViewCellModel(
                     date: forecast.date,
-                    description: forecast.descriptions.first??.description.capitalized,
+                    description: forecast.description?.capitalized,
                     minTemp: forecast.minTemperature,
                     maxTemp: forecast.maxTemperature
                 )
@@ -138,17 +137,10 @@ private extension WeatherViewController {
     }
     
     func setupViewModel() {
-        DispatchQueue.global().async {
-            self.locationService.locationSemaphore.wait()
-            DispatchQueue.main.async {
-                guard let location = self.locationService.currentLocation else {
-                    return
-                }
-                self.viewModel.fetchWeather(for: location)
-                self.viewModel.fetchForecast(for: location)
-            }
-        }
+        self.viewModel.fetchForecast()
+        self.viewModel.fetchWeather()
     }
+    
     
     func setupViewModel(for coordinates: CLLocationCoordinate2D?) {
         guard let coordinates = coordinates else {
@@ -174,12 +166,11 @@ private extension WeatherViewController {
         }
         
         weatherView.currentWeatherButtonAction.bind { [weak self] _ in
-            guard let self = self, let location = self.locationService.currentLocation else {
+            guard let self = self else {
                 return
             }
-            
-            viewModel.fetchWeather(for: location)
-            viewModel.fetchForecast(for: location)
+            viewModel.fetchForecast()
+            viewModel.fetchWeather()
             setupCurrentLocationView()
         }
         
@@ -224,7 +215,7 @@ private extension WeatherViewController {
         weatherView.hideCurrentWeatherButton()
         navigationItem.title = Constants.navigationItemTitle
     }
-
+    
     func setupSearchController() {
         searchController.searchResultsUpdater = self
         searchController.obscuresBackgroundDuringPresentation = false
@@ -233,16 +224,6 @@ private extension WeatherViewController {
         navigationItem.searchController = searchController
         definesPresentationContext = false
         navigationItem.hidesSearchBarWhenScrolling = false
-    }
-    
-    func formatDate(from date: Date) -> String? {
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateStyle = .medium
-        dateFormatter.locale = Locale(identifier: Constants.localeIdentifire)
-        dateFormatter.timeStyle = .short
-        let formattedDate = dateFormatter.string(from: date)
-            
-        return formattedDate
     }
 }
 
