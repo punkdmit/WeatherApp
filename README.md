@@ -11,4 +11,3 @@
 
 ````
 pod install
-```
