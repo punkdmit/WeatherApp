@@ -8,6 +8,12 @@
 import Foundation
 import CoreLocation
 
+protocol INetworkService {
+    func getWeather(for location: CLLocationCoordinate2D, completion: @escaping (Result<WeatherResponse, Error>) -> Void)
+    func getForecast(for location: CLLocationCoordinate2D, completion: @escaping (Result<ForecastResponse, Error>) -> Void)
+    func getCities(for cityName: String, completion: @escaping (Result<[CityResponse], Error>) -> Void)
+}
+
 private enum Endpoints: String {
     case weather = "/weather"
     case forecast = "/forecast"
@@ -31,7 +37,7 @@ private extension String {
     static let citiesLimit = "3"
 }
 
-final class NetworkService {
+final class NetworkService: INetworkService {
     
     func getWeather(for location: CLLocationCoordinate2D, completion: @escaping (Result<WeatherResponse, Error>) -> Void) {
         guard let request = createLocationWeatherRequest(for: location, Endpoints.weather) else {

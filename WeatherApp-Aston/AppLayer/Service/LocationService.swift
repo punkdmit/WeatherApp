@@ -7,12 +7,16 @@
 
 import CoreLocation
 
-final class LocationService: NSObject {
+protocol ILocationService {
+    var currentLocation: Bindable<CLLocationCoordinate2D?> { get }
+    var locationGroup: DispatchGroup { get }
+    func requestLocation()
+}
+
+final class LocationService: NSObject, ILocationService {
     
     let locationManager = CLLocationManager()
-    var currentLocation: CLLocationCoordinate2D?
-    let locationSemaphore = DispatchSemaphore(value: 0)
-
+    var currentLocation = Bindable<CLLocationCoordinate2D?>(nil)
     let locationGroup = DispatchGroup()
     
     //MARK: Inizialization
@@ -22,7 +26,6 @@ final class LocationService: NSObject {
         locationManager.requestWhenInUseAuthorization()
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        requestLocation()
     }
 }
 
@@ -41,7 +44,7 @@ extension LocationService {
 extension LocationService: CLLocationManagerDelegate {
     
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-        currentLocation = locations.first?.coordinate
+        currentLocation.value = locations.first?.coordinate
         locationGroup.leave()
     }
     

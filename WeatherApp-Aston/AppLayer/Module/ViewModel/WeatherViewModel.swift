@@ -25,18 +25,35 @@ final class WeatherViewModel {
     var isSearching = Bindable<Bool>(false)
     var searchText = Bindable<String?>("")
     
-    private let networkService = NetworkService()
-    private let locationService = LocationService()
+    private var networkService: INetworkService?
+    private var locationService: ILocationService?
     
+    //MARK: Initizialization
     
+    init(networkService: INetworkService, locationService: ILocationService) {
+        self.networkService = networkService
+        self.locationService = locationService
+    }
+    
+    func requestLocation() {
+        locationService?.requestLocation()
+    }
+    
+    func bind() {
+        locationService?.currentLocation.bind { [weak self] _ in
+            guard let self = self else { return }
+            fetchWeather()
+            fetchForecast()
+        }
+    }
     
     func fetchWeather() {
         DispatchQueue.global().async {
-            self.locationService.locationGroup.wait()
-            guard let location = self.locationService.currentLocation else {
+            self.locationService?.locationGroup.wait()
+            guard let location = self.locationService?.currentLocation.value else {
                 return
             }
-            self.networkService.getWeather(for: location) { [weak self] result in
+            self.networkService?.getWeather(for: location) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let weather):
@@ -50,7 +67,7 @@ final class WeatherViewModel {
     }
     
     func fetchWeather(for location: CLLocationCoordinate2D) {
-        self.networkService.getWeather(for: location) { [weak self] result in
+        self.networkService?.getWeather(for: location) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let weather):
@@ -62,14 +79,13 @@ final class WeatherViewModel {
         
     }
     
-    
     func fetchForecast() {
         DispatchQueue.global().async {
-            self.locationService.locationGroup.wait()
-            guard let location = self.locationService.currentLocation else {
+            self.locationService?.locationGroup.wait()
+            guard let location = self.locationService?.currentLocation.value else {
                 return
             }
-            self.networkService.getForecast(for: location) { [weak self] result in
+            self.networkService?.getForecast(for: location) { [weak self] result in
                 guard let self = self else { return }
                 switch result {
                 case .success(let forecast):
@@ -82,7 +98,7 @@ final class WeatherViewModel {
     }
     
     func fetchForecast(for location: CLLocationCoordinate2D) {
-        self.networkService.getForecast(for: location) { [weak self] result in
+        self.networkService?.getForecast(for: location) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let forecast):
@@ -95,7 +111,7 @@ final class WeatherViewModel {
     }
     
     func fetchCity(for city: String) {
-        networkService.getCities(for: city) { [weak self] result in
+        networkService?.getCities(for: city) { [weak self] result in
             guard let self = self else { return }
             switch result {
             case .success(let city):

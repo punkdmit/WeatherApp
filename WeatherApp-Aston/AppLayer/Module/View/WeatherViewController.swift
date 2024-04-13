@@ -22,8 +22,11 @@ final class WeatherViewController: UIViewController {
     
     //MARK: Private properties
     
+    private let viewModel = WeatherViewModel(
+        networkService: NetworkService(),
+        locationService: LocationService()
+    )
     private var searchController = UISearchController(searchResultsController: nil)
-    private let viewModel = WeatherViewModel()
     private let dateFormatter = DateFormatter()
     
     private lazy var weatherView: WeatherView = {
@@ -38,8 +41,8 @@ final class WeatherViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
-        setupViewModel()
         bindViewModel()
+        requestLocation()
     }
 }
 
@@ -136,22 +139,21 @@ private extension WeatherViewController {
         }
     }
     
-    func setupViewModel() {
-        self.viewModel.fetchForecast()
-        self.viewModel.fetchWeather()
+    func requestLocation() {
+        viewModel.requestLocation()
     }
-    
     
     func setupViewModel(for coordinates: CLLocationCoordinate2D?) {
         guard let coordinates = coordinates else {
             return
         }
-        
         viewModel.fetchWeather(for: coordinates)
         viewModel.fetchForecast(for: coordinates)
     }
     
     func bindViewModel() {
+        viewModel.bind()
+        
         viewModel.weather.bind { [weak self] _ in
             guard let self = self else { return }
             
