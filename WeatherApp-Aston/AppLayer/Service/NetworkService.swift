@@ -162,7 +162,7 @@ final class NetworkService: INetworkService {
         }
     }
     
-    private func parseForecastData(data: Data) -> ForecastResponse?/*FilteredForecastResponse?*/{
+    private func parseForecastData(data: Data) -> ForecastResponse? {
         let decoder = JSONDecoder()
         do {
             let forecastData = try decoder.decode(ForecastResponse.self, from: data)
